@@ -1,0 +1,13 @@
+PROJETO ESP32 - TESTADOR DE SENSORES
+
+Abra esta pasta no VS Code com PlatformIO.
+1. File > Open Folder > selecione proj_testador_ds_ble
+2. Aguarde o PlatformIO carregar as bibliotecas.
+3. Execute PlatformIO: Clean e depois PlatformIO: Build.
+4. Se o Build mostrar SUCCESS, conecte o ESP32 e execute Upload.
+
+Hardware: LCD I2C 0x27 (SDA21/SCL22), DS18B20 GPIO4, botoes GPIO25/26.
+A busca BLE lista todos os anuncios encontrados, mas a decodificacao de
+medicoes so funciona para os formatos implementados. Nao inventa valores.
+
+Avisos do IntelliSense nao substituem o resultado do Build.
