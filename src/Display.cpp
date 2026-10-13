@@ -1,4 +1,3 @@
-
 #include "Display.h"
 
 void limparLinha(int linha) {

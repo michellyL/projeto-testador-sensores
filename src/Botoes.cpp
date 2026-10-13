@@ -2,26 +2,26 @@
 #include "Botoes.h"
 #include "SensorDS.h"
 #include "BluetoothBLE.h"
+#include "SensorUmidade.h"
 
 void cliqueDS()
 {
     modoBLE = false;
-    mostrandoTag = !mostrandoTag;
-
-    if (mostrandoTag)
-    {
-        mostrarTag();
+    telaDS = (telaDS + 1) % 4;
+    mostrandoTag = (telaDS == 1 || telaDS == 3);
+    switch (telaDS) {
+        case 0: mostrarTemperatura(); break;
+        case 1: mostrarTag(); break;
+        case 2: mostrarTemperaturaUmidade(); break;
+        case 3: mostrarTagUmidade(); break;
     }
-    else
-    {
-        mostrarTemperatura();
-        ultimaTemperatura = millis();
-    }
+    ultimaTemperatura = millis();
 }
 
 void longoDS()
 {
     modoBLE = false;
+    telaDS = 0;
     mostrandoTag = false;
     mostrarTemperatura();
     ultimaTemperatura = millis();

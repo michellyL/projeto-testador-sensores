@@ -10,6 +10,7 @@
 #include <string>
 
 #define PINO_SENSOR 4
+#define PINO_SENSOR_ADD 32
 #define BOTAO_DS 25
 #define BOTAO_BLE 26
 constexpr int MAX_BLE = 50;
@@ -44,6 +45,7 @@ extern int totalBLE;
 extern int selecionado;
 extern bool modoBLE;
 extern bool mostrandoTag;
+extern uint8_t telaDS;
 extern bool mostrandoMAC;
 extern unsigned long ultimaTemperatura;
 extern Botao botaoDS;

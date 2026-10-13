@@ -6,7 +6,7 @@ void mostrarTemperatura() {
     float temp = sensor.getTempCByIndex(0);
 
     limparLinha(0);
-    lcd.print("TEMPERATURA:");
+    lcd.print("TEMP 1:");
 
     limparLinha(1);
 

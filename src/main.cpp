@@ -3,6 +3,7 @@
 #include "SensorDS.h"
 #include "BluetoothBLE.h"
 #include "Botoes.h"
+#include "SensorUmidade.h"
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 OneWire oneWire(PINO_SENSOR);
@@ -14,6 +15,7 @@ int totalBLE = 0;
 int selecionado = 0;
 bool modoBLE = false;
 bool mostrandoTag = false;
+uint8_t telaDS = 0;
 bool mostrandoMAC = false;
 unsigned long ultimaTemperatura = 0;
 Botao botaoDS = {BOTAO_DS, HIGH, HIGH, 0, 0, false};
@@ -31,6 +33,7 @@ void setup()
     lcd.backlight();
 
     sensor.begin();
+    iniciarSensorUmidade();
 
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -60,7 +63,8 @@ void loop()
     {
 
         ultimaTemperatura = millis();
-        mostrarTemperatura();
+        if (telaDS == 2) mostrarTemperaturaUmidade();
+        else mostrarTemperatura();
     }
 
     delay(10);
