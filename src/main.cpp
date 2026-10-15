@@ -3,28 +3,24 @@
 #include "SensorDS.h"
 #include "BluetoothBLE.h"
 #include "Botoes.h"
-#include "SensorUmidade.h"
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 OneWire oneWire(PINO_SENSOR);
 DallasTemperature sensor(&oneWire);
-DeviceAddress enderecoSensor;
-BLEScan *scannerBLE = nullptr;
+BLEScan* scannerBLE = nullptr;
 Dispositivo lista[MAX_BLE];
 int totalBLE = 0;
 int selecionado = 0;
 bool modoBLE = false;
 bool mostrandoTag = false;
-uint8_t telaDS = 0;
 bool mostrandoMAC = false;
 unsigned long ultimaTemperatura = 0;
+unsigned long ultimaBuscaDS = 0;
 Botao botaoDS = {BOTAO_DS, HIGH, HIGH, 0, 0, false};
 Botao botaoBLE = {BOTAO_BLE, HIGH, HIGH, 0, 0, false};
 
-void setup()
-{
+void setup() {
     Serial.begin(115200);
-
     pinMode(BOTAO_DS, INPUT_PULLUP);
     pinMode(BOTAO_BLE, INPUT_PULLUP);
 
@@ -32,39 +28,38 @@ void setup()
     lcd.init();
     lcd.backlight();
 
-    sensor.begin();
-    iniciarSensorUmidade();
-
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("TESTADOR SENSOR");
     lcd.setCursor(0, 1);
     lcd.print("Iniciando...");
 
+    iniciarSensoresDS();
     iniciarBluetooth();
+    delay(1000);
 
-    delay(1500);
-
-    lcd.clear();
+    mostrandoTag = false;
     mostrarTemperatura();
     ultimaTemperatura = millis();
-
     Serial.println("Testador iniciado!");
 }
 
-void loop()
-{
+void loop() {
     processarBotao(botaoDS, 0);
     processarBotao(botaoBLE, 1);
 
-    if (!modoBLE &&
-        !mostrandoTag &&
-        millis() - ultimaTemperatura >= 2000)
-    {
-
-        ultimaTemperatura = millis();
-        if (telaDS == 2) mostrarTemperaturaUmidade();
+    // Atualiza a lista periodicamente para perceber sensores conectados/removidos.
+    if (!modoBLE && millis() - ultimaBuscaDS >= INTERVALO_BUSCA_DS) {
+        procurarSensoresDS();
+        if (mostrandoTag) mostrarTag();
         else mostrarTemperatura();
+        ultimaTemperatura = millis();
+    }
+
+    if (!modoBLE && !mostrandoTag &&
+        millis() - ultimaTemperatura >= INTERVALO_TEMPERATURA) {
+        ultimaTemperatura = millis();
+        mostrarTemperatura();
     }
 
     delay(10);
