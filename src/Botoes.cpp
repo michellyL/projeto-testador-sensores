@@ -2,73 +2,75 @@
 #include "SensorDS.h"
 #include "BluetoothBLE.h"
 
+// Clique curto, avança entre os sensores
 void cliqueDS() {
-    modoBLE = false;
-    // Clique curto percorre os sensores encontrados.
+    modoBluetoothAtivo = false;
     proximoSensorDS();
 }
 
+// Clique longo, exibe a tela de temperatura/TAG.
 void longoDS() {
-    // A tela principal sempre mostra temperatura e TAG juntas.
-    modoBLE = false;
+    modoBluetoothAtivo = false;
     mostrandoTag = false;
     mostrarTemperatura();
-    ultimaTemperatura = millis();
+    instanteUltimaTemperatura = millis();
 }
 
+// Clique curto avança entre os BLE
 void cliqueBLE() {
-    if (!modoBLE) {
-        modoBLE = true;
-        buscarBluetooth();
+    if (!modoBluetoothAtivo) {
+        modoBluetoothAtivo = true;
+        buscarDispositivosBluetooth();
         return;
     }
 
-    if (totalBLE == 0) {
-        buscarBluetooth();
+    if (quantidadeDispositivosBLE == 0) {
+        buscarDispositivosBluetooth();
         return;
     }
 
-    selecionado++;
-    if (selecionado >= totalBLE) selecionado = 0;
-    mostrarBLE();
+    indiceDispositivoBLESelecionado++;
+    if (indiceDispositivoBLESelecionado >= quantidadeDispositivosBLE) indiceDispositivoBLESelecionado = 0;
+    mostrarDispositivoBLE();
 }
 
+// Clique longo, exibe o MAC
 void longoBLE() {
-    if (!modoBLE) {
-        modoBLE = true;
-        buscarBluetooth();
+    if (!modoBluetoothAtivo) {
+        modoBluetoothAtivo = true;
+        buscarDispositivosBluetooth();
         return;
     }
 
     mostrandoMAC = !mostrandoMAC;
-    mostrarBLE();
+    mostrarDispositivoBLE();
 }
 
-void processarBotao(Botao& botao, int tipo) {
-    bool leitura = digitalRead(botao.pino);
+void processarBotao(Botao& botao, TipoBotao tipo) {
+    bool leitura = digitalRead(botao.pinoGPIO);
     unsigned long agora = millis();
 
-    if (leitura != botao.anterior) botao.mudanca = agora;
+    if (leitura != botao.leituraAnterior) botao.instanteUltimaMudanca = agora;
 
-    if (agora - botao.mudanca > DEBOUNCE) {
-        if (leitura != botao.estavel) {
-            botao.estavel = leitura;
+    if (agora - botao.instanteUltimaMudanca > TEMPO_DEBOUNCE_MS) {
+        if (leitura != botao.estadoEstavel) {
+            botao.estadoEstavel = leitura;
             if (leitura == LOW) {
-                botao.inicio = agora;
-                botao.longo = false;
-            } else if (!botao.longo) {
-                if (tipo == 0) cliqueDS();
+                botao.instantePressionamento = agora;
+                botao.cliqueLongoDisparado = false;
+            } else if (!botao.cliqueLongoDisparado) {
+                if (tipo == TipoBotao::SensorDS18B20) cliqueDS();
                 else cliqueBLE();
             }
         }
     }
 
-    if (botao.estavel == LOW && !botao.longo &&
-        agora - botao.inicio >= TEMPO_LONGO) {
-        botao.longo = true;
-        if (tipo == 0) longoDS();
+    if (botao.estadoEstavel == LOW && !botao.cliqueLongoDisparado &&
+        agora - botao.instantePressionamento >= TEMPO_CLIQUE_LONGO_MS) {
+        botao.cliqueLongoDisparado = true;
+        if (tipo == TipoBotao::SensorDS18B20) longoDS();
         else longoBLE();
     }
 
-    botao.anterior = leitura;
+    botao.leituraAnterior = leitura;
 }
