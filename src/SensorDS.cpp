@@ -21,9 +21,9 @@ namespace {
     }
 
     void imprimirTagLCD(const DeviceAddress endereco) {
-        // A TAG possui 16 caracteres hexadecimais; divide entre as duas linhas.
+        // Exibe os 16 caracteres hexadecimais na segunda linha do LCD.
+        lcd.setCursor(0, 1);
         for (uint8_t i = 0; i < 8; ++i) {
-            if (i == 4) lcd.setCursor(0, 1);
             if (endereco[i] < 0x10) lcd.print('0');
             lcd.print(endereco[i], HEX);
         }
@@ -103,9 +103,11 @@ void proximoSensorDS() {
 }
 
 void mostrarTemperatura() {
+    lcd.clear();
+
     if (totalDS == 0) {
-        lcd.clear();
-        lcd.print("NENHUM DS18B20");
+        lcd.setCursor(0, 0);
+        lcd.print("Nenhum sensor DS");
         lcd.setCursor(0, 1);
         lcd.print("Verifique cabos");
         Serial.println("Nenhum DS18B20 encontrado no barramento.");
@@ -115,13 +117,13 @@ void mostrarTemperatura() {
     sensor.requestTemperatures();
     float temp = sensor.getTempC(enderecosDS[selecionadoDS]);
 
-    lcd.clear();
-    lcd.print("DS "); lcd.print(selecionadoDS + 1); lcd.print("/"); lcd.print(totalDS);
-    lcd.print(" TEMP:");
-    lcd.setCursor(0, 1);
+    // Linha 1: numero do sensor e temperatura; linha 2: TAG completa (16 digitos).
+    lcd.setCursor(0, 0);
+    lcd.print(selecionadoDS + 1);
+    lcd.print(" TEMP: ");
 
     if (temp == DEVICE_DISCONNECTED_C || temp < -55.0f || temp > 125.0f) {
-        lcd.print("Leitura invalida");
+        lcd.print("ERRO");
         Serial.print("Falha na leitura do DS ");
         Serial.println(selecionadoDS + 1);
     } else {
@@ -133,22 +135,11 @@ void mostrarTemperatura() {
         Serial.print(" | TAG: "); imprimirTagSerial(enderecosDS[selecionadoDS]);
         Serial.print(" | Temperatura: "); Serial.print(temp, 2); Serial.println(" C");
     }
+
+    imprimirTagLCD(enderecosDS[selecionadoDS]);
 }
 
 void mostrarTag() {
-    if (totalDS == 0) {
-        mostrarTemperatura();
-        return;
-    }
-
-    lcd.clear();
-    lcd.print("TAG DS "); lcd.print(selecionadoDS + 1); lcd.print("/"); lcd.print(totalDS);
-    lcd.setCursor(0, 1);
-    // Mostra os primeiros 8 dígitos na primeira linha e os últimos 8 na segunda.
-    lcd.clear();
-    imprimirTagLCD(enderecosDS[selecionadoDS]);
-
-    Serial.print("TAG DS "); Serial.print(selecionadoDS + 1); Serial.print(": ");
-    imprimirTagSerial(enderecosDS[selecionadoDS]);
-    Serial.println();
+    // A TAG agora permanece visivel junto da temperatura na tela principal.
+    mostrarTemperatura();
 }

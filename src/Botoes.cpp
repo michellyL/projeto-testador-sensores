@@ -9,11 +9,10 @@ void cliqueDS() {
 }
 
 void longoDS() {
+    // A tela principal sempre mostra temperatura e TAG juntas.
     modoBLE = false;
-    // Pressionar por 2 segundos alterna entre temperatura e TAG do sensor atual.
-    mostrandoTag = !mostrandoTag;
-    if (mostrandoTag) mostrarTag();
-    else mostrarTemperatura();
+    mostrandoTag = false;
+    mostrarTemperatura();
     ultimaTemperatura = millis();
 }
 

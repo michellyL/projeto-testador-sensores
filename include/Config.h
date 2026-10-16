@@ -11,7 +11,7 @@
 #include <string>
 
 // Barramento OneWire compartilhado por todos os DS18B20.
-// GPIO4 do ESP32 (também identificado como D4 em algumas placas).
+// GPIO4 do ESP32 
 #define PINO_SENSOR 4
 #define BOTAO_DS 25
 #define BOTAO_BLE 26
@@ -20,7 +20,7 @@ constexpr int MAX_BLE = 50;
 constexpr int MAX_DS = 16;
 constexpr unsigned long DEBOUNCE = 50;
 constexpr unsigned long TEMPO_LONGO = 2000;
-constexpr unsigned long INTERVALO_TEMPERATURA = 2000;
+constexpr unsigned long INTERVALO_TEMPERATURA = 8000;
 constexpr unsigned long INTERVALO_BUSCA_DS = 10000;
 
 struct Dispositivo {

@@ -30,13 +30,19 @@ void setup() {
 
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("TESTADOR SENSOR");
+    lcd.print("Buscando");
     lcd.setCursor(0, 1);
-    lcd.print("Iniciando...");
+    lcd.print("sensores...");
 
     iniciarSensoresDS();
     iniciarBluetooth();
-    delay(1000);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Sensores: ");
+    lcd.setCursor(0, 1);
+    lcd.print(quantidadeSensoresDS());
+    delay(4000);
 
     mostrandoTag = false;
     mostrarTemperatura();
