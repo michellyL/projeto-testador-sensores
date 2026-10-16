@@ -1,17 +1,15 @@
 # Testador de Sensores DS18B20 e BLE
 
-Projeto desenvolvido com ESP32 para testar múltiplos sensores de temperatura Dallas DS18B20 e identificar dispositivos Bluetooth Low Energy (BLE). O sistema utiliza um display LCD 16x2 I2C para apresentar as informações e botões para percorrer entre os sensores e dispositivos encontrados.
+Projeto desenvolvido com ESP32 para testar múltiplos sensores de temperatura Dallas DS18B20 e identificar dispositivos Bluetooth Low Energy (BLE). O sistema utiliza um display LCD 16x2 I2C para apresentar as informações e botões para percorrer entre os sensores encontrados.
 
 ## Funcionalidades
 
 - Reconhecimento de múltiplos sensores DS18B20 conectados ao mesmo barramento OneWire.
-- Leitura individual da temperatura de cada sensor encontrado.
-- Identificação dos sensores DS18B20 por meio de seus endereços únicos (TAG).
+- Identificação dos sensores DS18B20 por meio de seus endereços(TAG).
 - Exibição do número do sensor, temperatura e TAG no LCD.
 - Exibição da quantidade de sensores encontrados durante a inicialização.
 - Navegação entre os sensores de temperatura utilizando o botão DS.
 - Busca de dispositivos Bluetooth Low Energy (BLE) próximos.
-- Navegação entre os dispositivos BLE encontrados.
 - Visualização do nome, MAC e informações disponíveis dos dispositivos BLE.
 - Leitura de temperatura e umidade de dispositivos BLE 
 
