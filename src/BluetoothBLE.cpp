@@ -8,7 +8,7 @@ void interpretarDadosTeltonika(Dispositivo& d, const std::string& dados) {
     if (n < 4) return;
     const bool cabecalho =
         ((p[0] == 0x9A && p[1] == 0x08) ||
-         (p[0] == 0x08 && p[1] == 0x9A)) && p[2] == 0x01;
+        (p[0] == 0x08 && p[1] == 0x9A)) && p[2] == 0x01;
     if (!cabecalho) return;
     const uint8_t flags = p[3];
     size_t pos = 4;
