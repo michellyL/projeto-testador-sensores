@@ -3,72 +3,81 @@
 #include "BluetoothBLE.h"
 
 void cliqueDS() {
-    modoBLE = false;
-    // Clique curto percorre os sensores encontrados.
+    modoBluetoothAtivo = false;
     proximoSensorDS();
 }
 
+// Clique longo, exibe a tela de temperatura/TAG.
 void longoDS() {
-    // A tela principal sempre mostra temperatura e TAG juntas.
-    modoBLE = false;
+    modoBluetoothAtivo = false;
     mostrandoTag = false;
     mostrarTemperatura();
-    ultimaTemperatura = millis();
+    instanteUltimaTemperatura = millis();
 }
 
+// Clique curto avança entre os BLE
 void cliqueBLE() {
-    if (!modoBLE) {
-        modoBLE = true;
-        buscarBluetooth();
+    if (!modoBluetoothAtivo) {
+        modoBluetoothAtivo = true;
+        buscarDispositivosBluetooth();
         return;
     }
 
-    if (totalBLE == 0) {
-        buscarBluetooth();
+    if (quantidadeDispositivosBLE == 0) {
+        buscarDispositivosBluetooth();
         return;
     }
 
-    selecionado++;
-    if (selecionado >= totalBLE) selecionado = 0;
-    mostrarBLE();
+    indiceDispositivoBLESelecionado++;
+    if (indiceDispositivoBLESelecionado >= quantidadeDispositivosBLE) indiceDispositivoBLESelecionado = 0;
+    mostrarDispositivoBLE();
 }
 
+// Clique longo, exibe o MAC
 void longoBLE() {
-    if (!modoBLE) {
-        modoBLE = true;
-        buscarBluetooth();
+    if (!modoBluetoothAtivo) {
+        modoBluetoothAtivo = true;
+        buscarDispositivosBluetooth();
         return;
     }
 
     mostrandoMAC = !mostrandoMAC;
-    mostrarBLE();
+    mostrarDispositivoBLE();
 }
 
-void processarBotao(Botao& botao, int tipo) {
-    bool leitura = digitalRead(botao.pino);
+/*A função processarBotao é responsável por gerenciar o estado de um botão, 
+*realizando leituras do seu pino GPIO e detectando mudanças de estado, 
+*como cliques curtos e longos, com base em um tempo de debounce definido.
+*/
+
+void processarBotao(Botao& botao, TipoBotao tipo) {
+    bool leitura = digitalRead(botao.pinoGPIO);
     unsigned long agora = millis();
 
-    if (leitura != botao.anterior) botao.mudanca = agora;
+    if (leitura != botao.leituraAnterior) botao.instanteUltimaMudanca = agora;
 
-    if (agora - botao.mudanca > DEBOUNCE) {
-        if (leitura != botao.estavel) {
-            botao.estavel = leitura;
+    //calcula o temp desde a última mudança de estado do botão e verifica se passou o temp de debounce definido.
+    if (agora - botao.instanteUltimaMudanca > TEMPO_DEBOUNCE_MS) {
+        if (leitura != botao.estadoEstavel) {
+            botao.estadoEstavel = leitura; //Registra a leitura atual como o novo estado estável do botão
             if (leitura == LOW) {
-                botao.inicio = agora;
-                botao.longo = false;
-            } else if (!botao.longo) {
-                if (tipo == 0) cliqueDS();
+                botao.instantePressionamento = agora; //Esse horário será usado para saber se o botão ficou pressionado tempo suficiente para contar como clique longo.
+                botao.cliqueLongoDisparado = false;
+            } else if (!botao.cliqueLongoDisparado) { //Se a leitura não é LOW, botão foi solto, e verifica 
+                                                      //se o clique longo não foi disparado, então é um clique curto.
+                if (tipo == TipoBotao::SensorDS18B20) cliqueDS(); //Escolhe a ação de clique curto conforme o tipo de botão
                 else cliqueBLE();
             }
         }
     }
 
-    if (botao.estavel == LOW && !botao.longo &&
-        agora - botao.inicio >= TEMPO_LONGO) {
-        botao.longo = true;
-        if (tipo == 0) longoDS();
+    //o botão continua pressionado && a ação de clique longo ainda não foi executada neste pressionamento 
+    //&& passou o tempo mínimo definido para reconhecer um clique longo.
+    if (botao.estadoEstavel == LOW && !botao.cliqueLongoDisparado && agora - botao.instantePressionamento >= TEMPO_CLIQUE_LONGO_MS) {
+        botao.cliqueLongoDisparado = true; //Registra que o clique longo foi reconhecido
+        if (tipo == TipoBotao::SensorDS18B20) longoDS();
         else longoBLE();
     }
 
-    botao.anterior = leitura;
+    botao.leituraAnterior = leitura; //guarda a leitura atual como a leitura anterior
 }

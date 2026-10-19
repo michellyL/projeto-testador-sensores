@@ -1,13 +1,14 @@
 #include "BluetoothBLE.h"
 #include "Display.h"
 
-void interpretarTeltonika(Dispositivo& d, const std::string& dados) {
+// Decodifica temperatura/umidade quando os bytes correspondem ao cabecalho esperado.
+void interpretarDadosTeltonika(Dispositivo& d, const std::string& dados) {
     const uint8_t* p = reinterpret_cast<const uint8_t*>(dados.data());
     const size_t n = dados.size();
     if (n < 4) return;
     const bool cabecalho =
         ((p[0] == 0x9A && p[1] == 0x08) ||
-         (p[0] == 0x08 && p[1] == 0x9A)) && p[2] == 0x01;
+        (p[0] == 0x08 && p[1] == 0x9A)) && p[2] == 0x01;
     if (!cabecalho) return;
     const uint8_t flags = p[3];
     size_t pos = 4;
@@ -17,15 +18,15 @@ void interpretarTeltonika(Dispositivo& d, const std::string& dados) {
         float temp = bruto / 100.0f;
         pos += 2;
         if (temp >= -40.0f && temp <= 125.0f) {
-            d.temperatura = temp;
-            d.temTemp = true;
+            d.temperaturaCelsius = temp;
+            d.possuiTemperatura = true;
         }
     }
     if ((flags & 0x02) != 0) {
         if (pos >= n) return;
         if (p[pos] <= 100) {
-            d.umidade = p[pos];
-            d.temUmid = true;
+            d.umidadePercentual = p[pos];
+            d.possuiUmidade = true;
         }
     }
 }
@@ -36,62 +37,63 @@ public:
     void onResult(BLEAdvertisedDevice dev) override {
         const String mac(dev.getAddress().toString().c_str());
         int indice = -1;
-        for (int i = 0; i < totalBLE; ++i) {
-            if (lista[i].mac == mac) {
+        for (int i = 0; i < quantidadeDispositivosBLE; ++i) {
+            if (dispositivosBLE[i].enderecoMAC == mac) {
                 indice = i;
                 break;
             }
         }
         if (indice < 0) {
-            if (totalBLE >= MAX_BLE) return;
-            indice = totalBLE;
-            ++totalBLE;
-            lista[indice].mac = mac;
-            lista[indice].nome = "";
-            lista[indice].rssi = dev.getRSSI();
-            lista[indice].temTemp = false;
-            lista[indice].temUmid = false;
-            lista[indice].temperatura = 0.0f;
-            lista[indice].umidade = 0;
+            if (quantidadeDispositivosBLE >= 20) return;
+            indice = quantidadeDispositivosBLE;
+            ++quantidadeDispositivosBLE;
+            dispositivosBLE[indice].enderecoMAC = mac;
+            dispositivosBLE[indice].nomeDispositivo = "";
+            dispositivosBLE[indice].intensidadeSinalRSSI = dev.getRSSI();
+            dispositivosBLE[indice].possuiTemperatura = false;
+            dispositivosBLE[indice].possuiUmidade = false;
+            dispositivosBLE[indice].temperaturaCelsius = 0.0f;
+            dispositivosBLE[indice].umidadePercentual = 0;
         }
-        Dispositivo& dispositivo = lista[indice];
-        if (dev.getRSSI() > dispositivo.rssi) {
-            dispositivo.rssi = dev.getRSSI();
+        Dispositivo& dispositivo = dispositivosBLE[indice];
+        if (dev.getRSSI() > dispositivo.intensidadeSinalRSSI) {
+            dispositivo.intensidadeSinalRSSI = dev.getRSSI();
         }
         if (dev.haveName()) {
-            dispositivo.nome = String(dev.getName().c_str());
+            dispositivo.nomeDispositivo = String(dev.getName().c_str());
         }
         if (dev.haveManufacturerData()) {
-            interpretarTeltonika(dispositivo, dev.getManufacturerData());
+            interpretarDadosTeltonika(dispositivo, dev.getManufacturerData());
         }
     }
 };
 
-void mostrarBLE() {
+// Apresenta os dados do dispositivo BLE selecionado no LCD e no Serial.
+void mostrarDispositivoBLE() {
     lcd.clear();
-    if (totalBLE == 0) {
+    if (quantidadeDispositivosBLE == 0) {
         lcd.print("NENHUM BLE");
         lcd.setCursor(0, 1);
         lcd.print("ENCONTRADO");
         return;
     }
-    const Dispositivo& d = lista[selecionado];
-    Serial.print("BLE "); Serial.print(selecionado + 1);
-    Serial.print("/"); Serial.print(totalBLE);
-    Serial.print(" | MAC: "); Serial.print(d.mac);
-    Serial.print(" | Nome: "); Serial.print(d.nome);
-    Serial.print(" | RSSI: "); Serial.println(d.rssi);
+    const Dispositivo& d = dispositivosBLE[indiceDispositivoBLESelecionado];
+    Serial.print("BLE "); Serial.print(indiceDispositivoBLESelecionado + 1);
+    Serial.print("/"); Serial.print(quantidadeDispositivosBLE);
+    Serial.print(" | MAC: "); Serial.print(d.enderecoMAC);
+    Serial.print(" | Nome: "); Serial.print(d.nomeDispositivo);
+    Serial.print(" | RSSI: "); Serial.println(d.intensidadeSinalRSSI);
 
     if (mostrandoMAC) {
-        lcd.print(d.mac.substring(0, 9));
+        lcd.print(d.enderecoMAC.substring(0, 9));
         lcd.setCursor(0, 1);
-        lcd.print(d.mac.substring(9));
+        lcd.print(d.enderecoMAC.substring(9));
         return;
     }
-    if (d.temTemp || d.temUmid) {
+    if (d.possuiTemperatura || d.possuiUmidade) {
         lcd.print("TEMP: ");
-        if (d.temTemp) {
-            lcd.print(d.temperatura, 1);
+        if (d.possuiTemperatura) {
+            lcd.print(d.temperaturaCelsius, 1);
             lcd.write(static_cast<uint8_t>(223));
             lcd.print("C");
         } else {
@@ -99,56 +101,58 @@ void mostrarBLE() {
         }
         lcd.setCursor(0, 1);
         lcd.print("UMID: ");
-        if (d.temUmid) {
-            lcd.print(d.umidade);
+        if (d.possuiUmidade) {
+            lcd.print(d.umidadePercentual);
             lcd.print("%");
         } else {
             lcd.print("--");
         }
         return;
     }
-    lcd.print("BLE "); lcd.print(selecionado + 1);
-    lcd.print("/"); lcd.print(totalBLE);
+    lcd.print("BLE "); lcd.print(indiceDispositivoBLESelecionado + 1);
+    lcd.print("/"); lcd.print(quantidadeDispositivosBLE);
     lcd.setCursor(0, 1);
-    if (d.nome.length() > 0) lcd.print(d.nome.substring(0, 16));
+    if (d.nomeDispositivo.length() > 0) lcd.print(d.nomeDispositivo.substring(0, 16));
     else lcd.print("SEM TEMP/UMID");
 }
 
-void buscarBluetooth() {
+// Executa a busca BLE, ordena os resultados e apresenta o primeiro dispositivo.
+void buscarDispositivosBluetooth() {
     lcd.clear();
     lcd.print("BUSCANDO BLE...");
     lcd.setCursor(0, 1);
     lcd.print("Aguarde 10 seg");
-    totalBLE = 0;
-    selecionado = 0;
+    quantidadeDispositivosBLE = 0;
+    indiceDispositivoBLESelecionado = 0;
     mostrandoMAC = false;
-    scannerBLE->start(10, false);
-    for (int i = 0; i < totalBLE - 1; ++i) {
-        for (int j = i + 1; j < totalBLE; ++j) {
-            if (lista[j].rssi > lista[i].rssi) {
-                Dispositivo temp = lista[i];
-                lista[i] = lista[j];
-                lista[j] = temp;
+    scannerBluetooth->start(10, false);
+    for (int i = 0; i < quantidadeDispositivosBLE - 1; ++i) {
+        for (int j = i + 1; j < quantidadeDispositivosBLE; ++j) {
+            if (dispositivosBLE[j].intensidadeSinalRSSI > dispositivosBLE[i].intensidadeSinalRSSI) {
+                Dispositivo temp = dispositivosBLE[i];
+                dispositivosBLE[i] = dispositivosBLE[j];
+                dispositivosBLE[j] = temp;
             }
         }
     }
-    scannerBLE->clearResults();
+    scannerBluetooth->clearResults();
     Serial.print("TOTAL ENCONTRADO: ");
-    Serial.println(totalBLE);
-    for (int i = 0; i < totalBLE; ++i) {
+    Serial.println(quantidadeDispositivosBLE);
+    for (int i = 0; i < quantidadeDispositivosBLE; ++i) {
         Serial.print(i + 1); Serial.print(" | ");
-        Serial.print(lista[i].mac); Serial.print(" | ");
-        Serial.print(lista[i].nome); Serial.print(" | RSSI ");
-        Serial.println(lista[i].rssi);
+        Serial.print(dispositivosBLE[i].enderecoMAC); Serial.print(" | ");
+        Serial.print(dispositivosBLE[i].nomeDispositivo); Serial.print(" | RSSI ");
+        Serial.println(dispositivosBLE[i].intensidadeSinalRSSI);
     }
-    mostrarBLE();
+    mostrarDispositivoBLE();
 }
 
+// Inicializa o BLE e configura os parametros do scanner.
 void iniciarBluetooth() {
     BLEDevice::init("ESP32_TESTADOR");
-    scannerBLE = BLEDevice::getScan();
-    scannerBLE->setAdvertisedDeviceCallbacks(new ReceptorBLE(), true);
-    scannerBLE->setActiveScan(true);
-    scannerBLE->setInterval(100);
-    scannerBLE->setWindow(99);
+    scannerBluetooth = BLEDevice::getScan();
+    scannerBluetooth->setAdvertisedDeviceCallbacks(new ReceptorBLE(), true);
+    scannerBluetooth->setActiveScan(true);
+    scannerBluetooth->setInterval(100);
+    scannerBluetooth->setWindow(99);
 }
