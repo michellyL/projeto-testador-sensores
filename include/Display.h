@@ -5,5 +5,5 @@
 // LCD utilizado pelo modulo de apresentacao.
 extern LiquidCrystal_I2C lcd;
 
-// Apaga o conteudo de uma linha do LCD e reposiciona o cursor.
+// Apaga o conteudo de uma linha do LCD por meio do parametro numeroLinha e reposiciona o cursor.
 void limparLinha(uint8_t numeroLinha);

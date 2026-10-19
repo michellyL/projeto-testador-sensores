@@ -44,7 +44,7 @@ public:
             }
         }
         if (indice < 0) {
-            if (quantidadeDispositivosBLE >= CAPACIDADE_MAXIMA_BLE) return;
+            if (quantidadeDispositivosBLE >= 20) return;
             indice = quantidadeDispositivosBLE;
             ++quantidadeDispositivosBLE;
             dispositivosBLE[indice].enderecoMAC = mac;

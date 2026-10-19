@@ -3,19 +3,20 @@
 #include <DallasTemperature.h>
 #include "Config.h"
 
-// Objetos de hardware gerenciados pelo modulo DS18B20.
+//A classe OneWire implementa a comunicação com dispositivos 1-Wire, permitindo operações como reset, 
+//leitura e escrita de bytes e bits, além de suporte para busca de dispositivos e verificação de CRC
 extern OneWire barramentoOneWireDS;
 extern DallasTemperature sensoresTemperaturaDS;
 
-// Inicializa a biblioteca e realiza a primeira busca de sensores.
+// Inicializa a biblioteca e realiza a primeira busca de sensores
 void iniciarSensoresDS();
-// Atualiza a lista de enderecos dos sensores conectados.
+// Atualiza a lista de enderecos dos sensores
 void procurarSensoresDS();
-// Seleciona o proximo sensor, voltando ao primeiro ao final da lista.
+// Seleciona proximo sensor
 void proximoSensorDS();
-// Le e mostra temperatura e TAG do sensor selecionado.
+// Le e mostra temperatura e TAG do sensor 
 void mostrarTemperatura();
-// Funcao legada mantida temporariamente, conforme solicitado.
+
 void mostrarTag();
 // Informa quantos sensores DS18B20 foram encontrados.
 int quantidadeSensoresDS();
