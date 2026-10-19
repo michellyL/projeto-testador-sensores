@@ -22,7 +22,7 @@ unsigned long instanteUltimaBuscaDS = 0;
 Botao botaoDS = {PINO_BOTAO_DS, HIGH, HIGH, 0, 0, false};
 Botao botaoBLE = {PINO_BOTAO_BLE, HIGH, HIGH, 0, 0, false};
 
-// Configura serial, GPIOs, LCD e sensores antes de iniciar 
+// Configura serial, GPIOs, LCD e sensores antes de iniciar
 void setup() {
     Serial.begin(115200);
     pinMode(PINO_BOTAO_DS, INPUT_PULLUP);
