@@ -1,5 +1,5 @@
 #include "SensorDS.h"
-#include "Display.h"\n#include <cstring>
+#include "Lcd.h"
 
 namespace {
     DeviceAddress enderecosSensoresDS[CAPACIDADE_MAXIMA_DS];
