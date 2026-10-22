@@ -1,25 +1,14 @@
 #pragma once
 #include <Arduino.h>
-#include "Config.h"
 
-// Tipo de acao a cada botao
-enum class TipoBotao { SensorDS18B20, BluetoothBLE };
-
-// Estado do botao para debounce e pressionamento longo.
+//manter apenas os seguitntes campos
+// uint8_t pinoGPIO; uint8_t value;
 struct Botao {
-    uint8_t pinoGPIO;                     
-    bool leituraAnterior;                 
-    bool estadoEstavel;                   //Leitura validada pelo debounce
-    unsigned long instanteUltimaMudanca;  
-    unsigned long instantePressionamento; 
-    bool cliqueLongoDisparado;             //Impede repetir acao de clique longo
+    uint8_t pinoGPIO;
+    uint8_t value;
 };
 
-// Funcoes de clique e clique longo para cada botao.
-void cliqueDS();
-void longoDS();
-void cliqueBLE();
-void longoBLE();
+extern Botao botaoDS;
 
-// Processa leitura, debounce e evento de clique do botao informado.
-void processarBotao(Botao& botao, TipoBotao tipo);
+void button_configure(Botao& botao, uint8_t modo);
+bool button_is_pressed(Botao& botao);
