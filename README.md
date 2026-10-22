@@ -7,7 +7,7 @@ Projeto desenvolvido com ESP32 para testar múltiplos sensores de temperatura Da
 - Reconhecimento de múltiplos sensores DS18B20 conectados ao mesmo barramento OneWire.
 - Identificação dos sensores DS18B20 por meio de seus endereços (TAG).
 - Exibição do número do sensor selecionado, temperatura e TAG no LCD.
-- Exibição da quantidade de sensores encontrados durante a inicialização.
+- Exibição da quantidade de sensores encontrados pela serial durante a inicialização.
 - Navegação entre os sensores de temperatura utilizando o botão DS.
 - Atualização periódica da temperatura e nova busca por sensores DS18B20.
 
@@ -29,6 +29,7 @@ proj_testador_ds_ble/
 │   ├── Config.h
 │   ├── Gpio.h
 │   ├── Lcd.h
+│   ├── Serial.h
 │   ├── SensorDS.h
 │   ├── SystemDallas.h
 │   └── SystemSetup.h
@@ -37,6 +38,7 @@ proj_testador_ds_ble/
 │   ├── Gpio.cpp
 │   ├── Lcd.cpp
 │   ├── main.cpp
+│   ├── Serial.cpp
 │   ├── SensorDS.cpp
 │   ├── SystemDallas.cpp
 │   └── SystemSetup.cpp
@@ -47,7 +49,7 @@ proj_testador_ds_ble/
 
 ### 1. Inicialização
 
-O sistema configura a serial, o botão e o barramento I2C, inicializa o LCD e procura sensores DS18B20. Em seguida, exibe no LCD a quantidade encontrada e inicia a apresentação da temperatura.
+O sistema configura a serial, o botão e o barramento I2C, inicializa o LCD e procura sensores DS18B20. A quantidade encontrada é informada pela serial. No loop principal, o sistema verifica eventos e atualizações, e encaminha os dados do sensor para os módulos de LCD e Serial.
 
 ### 2. Exibição dos sensores DS18B20
 

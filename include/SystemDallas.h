@@ -1,3 +1,5 @@
 #pragma once
 
-void SystemDallas();
+bool SystemDallas();
+void SystemDallas_mostrarQuantidadeSensores();
+void SystemDallas_mostrarInformacoes();
